@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { HiveService } from '../services/hive.service';
-import { Hive } from '../models/hive';
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute, Router} from '@angular/router';
+import {HiveService} from '../services/hive.service';
+import {Hive} from '../models/hive';
 
 @Component({
   selector: 'app-hive-form',
@@ -17,12 +17,13 @@ export class HiveFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private hiveService: HiveService
-  ) { }
+  ) {
+  }
 
   ngOnInit() {
-    this.route.params.subscribe(p => {
-      if (p['id'] === undefined) return;
-      this.hiveService.getHive(p['id']).subscribe(h => this.hive = h);
+    this.route.params.subscribe(h => {
+      if (h['id'] === undefined) return;
+      this.hiveService.getHive(h['id']).subscribe(h => this.hive = h);
       this.existed = true;
     });
   }
@@ -34,16 +35,24 @@ export class HiveFormComponent implements OnInit {
   onCancel() {
     this.navigateToHives();
   }
-  
+
   onSubmit() {
+    if (this.existed) {
+      this.hiveService.updateHive(this.hive).subscribe(c => this.navigateToHives());
+    } else {
+      this.hiveService.addHive(this.hive).subscribe(c => this.navigateToHives());
+    }
   }
 
   onDelete() {
+    this.hiveService.setHiveStatus(this.hive.id, true).subscribe(c => this.hive.isDeleted = true);
   }
 
   onUndelete() {
+    this.hiveService.setHiveStatus(this.hive.id, false).subscribe(c => this.hive.isDeleted = false);
   }
 
   onPurge() {
+    this.hiveService.deleteHive(this.hive.id).subscribe(c => this.navigateToHives());
   }
 }
